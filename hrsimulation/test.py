@@ -3,7 +3,7 @@ import random
 from pyglet.gl import *
 from pyglet.window import mouse
 from pyglet import graphics, shapes, sprite, clock
-from .visual_rigid import VisualRectBody, VisualCircleBody
+from .visual_rigidbody import VisualRectBody, VisualCircleBody
 from .hrphysics.rigidbody import RigidBody
 from .hrphysics.world import World
 import numpy as np
