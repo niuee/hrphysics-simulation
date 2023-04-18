@@ -15,10 +15,13 @@ class World:
         self.rigid_bodies.append(body)
 
     def step(self, dt):
+        # print("--------")
+        # print("Body Count: ", len(self.rigid_bodies))
         possible_combinations = Collisions.broad_phase(self.rigid_bodies) 
         Collisions.narrow_phase(self.rigid_bodies, possible_combinations, dt, self.dynamic_control)
         for body in self.rigid_bodies:
             body.step(dt, self.dynamic_control)
+
 
 class RandWithWeight:
 

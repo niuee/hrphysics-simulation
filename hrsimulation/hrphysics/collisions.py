@@ -48,15 +48,21 @@ class Collisions:
     @staticmethod
     def broad_phase(bodies: list[RigidBody]):
         possible_combi = []
+        # total_count = 0
+        # skipped_count = 0
         for index in range(len(bodies)):
             for jindex in range(index + 1, len(bodies)):
+                # total_count += 1
                 body_a = bodies[index]
                 body_b = bodies[jindex]
                 body_a_aabb = body_a.get_aabb()
                 body_b_aabb = body_b.get_aabb()
                 if not Collisions.intersects_aabb(body_a_aabb, body_b_aabb):
+                    # skipped_count += 1
                     continue
                 possible_combi.append([index, jindex])
+        # print("Total Broad Phase Collision Checked:", total_count)
+        # print("Filtered Collision:", skipped_count)
         return possible_combi
 
     @staticmethod
@@ -73,9 +79,11 @@ class Collisions:
                 if not body_b.is_static:
                     body_b.move(revMoveDisplacement[0], revMoveDisplacement[1])
                 if body_a.is_static:
+                    body_a.move(revMoveDisplacement[0], revMoveDisplacement[1])
                     body_b.move(revMoveDisplacement[0], revMoveDisplacement[1])
                 if body_b.is_static:
                     body_a.move(moveDisplacement[0], moveDisplacement[1])
+                    body_b.move(moveDisplacement[0], moveDisplacement[1])
 
                 if dynamic_control:
                     Collisions.resolve_collision(body_a, body_b, normal, depth, delta_time)
