@@ -1,5 +1,5 @@
-from .hrphysics.rigidbody import RigidBody, Rect, Circle
-from .hrphysics import rigidbody
+from ...hrsimulation.hrphysics.rigidbody import RigidBody, Rect, Circle
+from ...hrsimulation.hrphysics import rigidbody
 from pyglet.graphics import Batch
 from pyglet import gl, shapes
 from abc import abstractclassmethod, ABC

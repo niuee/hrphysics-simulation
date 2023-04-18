@@ -1,11 +1,11 @@
-from hrsimulation.bare_bone_gui import App
+from .bare_bone_gui import App
 import random
 from pyglet.gl import *
 from pyglet.window import mouse
 from pyglet import graphics, shapes, sprite, clock
 from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody
-from .hrphysics.rigidbody import RigidBody
-from .hrphysics.world import World
+from ...hrsimulation.hrphysics.rigidbody import RigidBody
+from ...hrsimulation.hrphysics.world import World
 import numpy as np
 
 TANGENTIAL_TARGET_SPEED = 13

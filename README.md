@@ -9,4 +9,4 @@ However, the world and rigid body simulation are separated from the visual part 
 Therefore, in the future the visualizing part can be swapped out; I plan to use Pillow as the other visualizing alternative.
 The simulation can also run lacking the visual part of it. 
 
-Detail documentation of the project would be gradually added into the README file, I just don't have the time right now.
+Detail documentation of the project would be gradually added to the README file, I just don't have the time right now.
