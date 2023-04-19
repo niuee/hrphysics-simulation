@@ -5,7 +5,7 @@ from pyglet import gl, shapes
 from abc import abstractclassmethod, ABC
 import numpy as np
 
-RIGID_BODY_ATTRS = set({"center_x", "center_y", "orientation_angle", "mass", "linear_velocity", "linear_acceleration", "is_static", "moving_static", "radius", "miu_k", "miu_s", "force", "start_angle", "end_angle"})
+RIGID_BODY_ATTRS = set({"center_x", "center_y", "orientation_angle", "mass", "linear_velocity", "linear_acceleration", "is_static", "moving_static", "radius", "miu_k", "miu_s", "force", "start_angle", "end_angle", "angle_span","start_point", "end_point"})
 
 class VisualRigidBody(RigidBody):
 
@@ -191,8 +191,14 @@ class VisualArcComponent(VisualComponent):
     
 class VisualArcBody(VisualRigidBody):
 
-    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle = 0, mass = 500, start_angle=0, end_angle=np.pi/2):
-        self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=0, start_angle=start_angle, end_angle=end_angle)
+    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500):
+        self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=0, angle_span=angle_span, mass=mass)
+        self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=self._rigid_body.orientation_angle, end_angle=self._rigid_body.orientation_angle + self._rigid_body.angle_span)
+
+class VisualArcBody2(VisualRigidBody):
+
+    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, start_angle:float, end_angle: float, orientation_angle:float= 0, mass:float = 500):
+        self._rigid_body = rigidbody.Arc2(center_x=center_x, center_y=center_y, radius=radius, start_angle=start_angle, end_angle=end_angle, mass=mass)
         self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=start_angle, end_angle=end_angle)
 
 class VisualCircleBody(VisualRigidBody):
@@ -200,7 +206,6 @@ class VisualCircleBody(VisualRigidBody):
     def __init__(self, center_x:float, center_y:float, radius:float, batch:Batch, orientation_angle=0, mass=500):
         self._rigid_body = Circle(center_x, center_y, radius, orientation_angle, mass)
         self._visual_component = VisualCircleComponent(batch, center_x, center_y, radius, self._rigid_body)
-
 
 class VisualRectBody(VisualRigidBody):
 

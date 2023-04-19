@@ -3,8 +3,9 @@ import random
 from pyglet.gl import *
 from pyglet.window import mouse
 from pyglet import graphics, shapes, sprite, clock
-from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody
+from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody, VisualArcBody2
 from ...hrsimulation.hrphysics.rigidbody import RigidBody
+from ...hrsimulation.hrphysics import rigidbody
 from ...hrsimulation.hrphysics.world import World
 import numpy as np
 
@@ -18,8 +19,6 @@ class PhysicsTestGUI(App):
         
         super().__init__(width, height, *args, **kwargs)
         self.child_batch = pyglet.graphics.Batch()
-        self.ref_circle = shapes.Arc(0, 0, 300, batch=self.child_batch)
-        self.ref_circle.color = (235, 64, 52)
         self.ref_circle_2 = shapes.Arc(0, 0, 500, batch=self.child_batch)
         self.ref_circle_2.color = (235, 64, 52)
         # self.image = pyglet.resource.image('test.jpg')
@@ -30,11 +29,13 @@ class PhysicsTestGUI(App):
         # self.world.add_rigid_body(VisualRectBody(0, 300, 0.55, 2.4, self.child_batch, mass=500))
         # self.world.rigid_bodies[-1].linear_velocity = [20, 0]
         # self.world.rigid_bodies[-1].moving_static =  True
+        self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
+        # self.world.add_rigid_body(VisualPolygonBody(0, 300, [[-1, -3], [-1, 3], [3, 4], [5, 0], [3, -4]], self.child_batch))
+        self.arc_test = VisualArcBody(0, 0, 200, self.child_batch, orientation_angle=0, angle_span=np.pi/2)
+        self.world.add_rigid_body(self.arc_test)
+        # self.arc_test2 = VisualArcBody2(0, 0, 200, self.child_batch, start_angle=0, end_angle=np.pi/2)
+        # self.world.add_rigid_body(self.arc_test2)
         # self.world.add_rigid_body(VisualCircleBody(0, 0, 200, self.child_batch))
-        self.world.add_rigid_body(VisualRectBody(0, 310, 0.55, 2.4, self.child_batch, mass=500))
-        # self.world.add_rigid_body(VisualPolygonBody(0, 300, [[-1, -4], [-1, 4], [2, 5], [5, 0], [2, -5]], self.child_batch, 0))
-        # self.world.rigid_bodies[-1].is_static =  True
-        self.world.add_rigid_body(VisualArcBody(0, 0, 200, self.child_batch, start_angle=0, end_angle=np.pi/2))
         self.world.rigid_bodies[-1].is_static =  True
         self.time = 0
         # self.world.rigid_bodies[-1].is_static = True
@@ -101,6 +102,8 @@ class PhysicsTestGUI(App):
         elif self.keys[pyglet.window.key.Q]:
             if move_index < len(self.world.rigid_bodies):
                 self.world.rigid_bodies[move_index].rotate_radians(np.pi/16)
+        
+
 
         # body = self.world.rigid_bodies[0]
         # rvect_origin_body = [-body.center_x, -body.center_y]
@@ -130,9 +133,13 @@ class PhysicsTestGUI(App):
         # total_force = np.multiply(body.mass, total_acceleration)
 
         # Print body properties
-        # print("-------")
+        print("-------")
+        # print("Total Body Count:", len(self.world.rigid_bodies))
+        # print("Test Arc Start Point: ", self.arc_test.start_point)
+        # print("Test Arc End Point: ", self.arc_test.end_point)
+        # print("Test Arc angle spane: ", self.arc_test.angle_span)
         # angle =  RigidBody.angle_vectora2b([body.center_x, body.center_y], [1, 0])
-        # print("Current Time:", self.time)
+        print("Current Time:", self.time)
         # print("Current Angle:", angle)
         # print("Normal Acceleration Magnitude:", normal_acceleration_magnitude)
         # print("Normal Velocity:", normal_velocity)

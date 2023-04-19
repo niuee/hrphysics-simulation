@@ -9,15 +9,24 @@ class Collisions:
     @staticmethod
     def intersects(body_a:RigidBody, body_b: RigidBody):
         axis = []
-        axis.extend(body_a.get_collision_axis(body_b))
-        axis.extend(body_b.get_collision_axis(body_a))
+        body_a_axis = body_a.get_collision_axis(body_b)
+        body_b_axis = body_b.get_collision_axis(body_a)
+        axis.extend(body_a_axis)
+        axis.extend(body_b_axis)
         collision = True
         min_depth = float("inf")
         min_axis = axis[0]
+
+        print("########")
+        print("body_a_axis:", body_a_axis)
+        print("body_b_axis:", body_b_axis)
         for proj_axis in axis:
             body_a_interval = body_a.get_min_max_projection(proj_axis)
             body_b_interval = body_b.get_min_max_projection(proj_axis)
+            print("body_a_interval", body_a_interval)
+            print("body_b_interval", body_b_interval)
             if body_a_interval[0] >= body_b_interval[1] or body_b_interval[0] >= body_a_interval[1]:
+                print("at vector", proj_axis)
                 collision = False
                 break
             else:
@@ -68,6 +77,7 @@ class Collisions:
     @staticmethod
     def narrow_phase(bodies: list[RigidBody], combinations: list[list[int]], delta_time, dynamic_control):
         for body_a_index, body_b_index in combinations:
+            # print("narrow phase")
             body_a = bodies[body_a_index]
             body_b = bodies[body_b_index]
             collide, depth, normal = Collisions.intersects(body_a, body_b)
