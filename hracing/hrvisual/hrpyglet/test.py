@@ -30,11 +30,11 @@ class PhysicsTestGUI(App):
         # self.world.add_rigid_body(VisualRectBody(0, 300, 0.55, 2.4, self.child_batch, mass=500))
         # self.world.rigid_bodies[-1].linear_velocity = [20, 0]
         # self.world.rigid_bodies[-1].moving_static =  True
-        # self.world.add_rigid_body(VisualArcBody(0, 0, 200, self.child_batch, start_angle=0, end_angle=np.pi/2))
-        # self.world.rigid_bodies[-1].is_static =  True
         # self.world.add_rigid_body(VisualCircleBody(0, 0, 200, self.child_batch))
         self.world.add_rigid_body(VisualRectBody(0, 310, 0.55, 2.4, self.child_batch, mass=500))
-        self.world.add_rigid_body(VisualPolygonBody(0, 300, [[-1, -4], [-1, 4], [2, 5], [5, 0], [2, -5]], self.child_batch, 0))
+        # self.world.add_rigid_body(VisualPolygonBody(0, 300, [[-1, -4], [-1, 4], [2, 5], [5, 0], [2, -5]], self.child_batch, 0))
+        # self.world.rigid_bodies[-1].is_static =  True
+        self.world.add_rigid_body(VisualArcBody(0, 0, 200, self.child_batch, start_angle=0, end_angle=np.pi/2))
         self.world.rigid_bodies[-1].is_static =  True
         self.time = 0
         # self.world.rigid_bodies[-1].is_static = True

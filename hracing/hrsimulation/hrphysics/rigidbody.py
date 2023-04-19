@@ -261,21 +261,40 @@ class Arc(RigidBody):
         self.force = [0, 0]
 
     def get_min_max_projection(self, unit_vector: list[float]):
-        start_point = [self.center_x + self.radius * math.cos(self.start_angle), self.center_y + self.radius * math.sin(self.start_angle)]
-        end_point = [self.center_x + self.radius * math.cos(self.end_angle), self.center_y + self.radius * math.sin(self.end_angle)]
-        rotation_matrix = [[np.cos(self.orientation_angle), -np.sin(self.orientation_angle)], [np.sin(self.orientation_angle), np.cos(self.orientation_angle)]]
-        start_point = np.matmul(rotation_matrix, start_point)
-        end_point = np.matmul(rotation_matrix, end_point)
+        start_point = [self.center_x + self.radius * math.cos(self.start_angle + self.orientation_angle), self.center_y + self.radius * math.sin(self.start_angle + self.orientation_angle)]
+        end_point = [self.center_x + self.radius * math.cos(self.end_angle + self.orientation_angle), self.center_y + self.radius * math.sin(self.end_angle + self.orientation_angle)]
+        extra_point = start_point
+        unit_vector_angle = math.atan2(unit_vector[1], unit_vector[0]) 
+        if abs(unit_vector_angle - self.start_angle + self.orientation_angle) <= abs(self.end_angle - self.start_angle) and \
+            (unit_vector_angle - self.start_angle + self.orientation_angle) * (self.end_angle - self.start_angle) >= 0:
+            extra_point = np.add([self.center_x, self.center_y], np.multiply(unit_vector, self.radius))
         
-        proj_1 = np.dot(start_point, unit_vector)
-        proj_2 = np.dot(end_point, unit_vector)
+        proj_s = np.dot(start_point, unit_vector)
+        proj_end = np.dot(end_point, unit_vector)
+        proj_extra = np.dot(extra_point, unit_vector)
+        proj_center = np.dot([self.center_x, self.center_y], unit_vector)
         # point_2 = np.dot([self.center_x, self.center_y], unit_vector)
-        return [min(proj_1, proj_2), max(proj_1, proj_2)]
+        return [min(proj_s, proj_end, proj_center, proj_extra), max(proj_s, proj_end, proj_center, proj_extra)]
 
     def get_collision_axis(self, relative_body:RigidBody):
-        test = RigidBody.get_unit_vector([self.center_x - relative_body.center_x, self.center_y - relative_body.center_y])
-        print(test)
-        return [test]
+        test = RigidBody.get_unit_vector([relative_body.center_x - self.center_x, relative_body.center_y - self.center_y])
+        start_point = [self.center_x + self.radius * math.cos(self.start_angle + self.orientation_angle), self.center_y + self.radius * math.sin(self.start_angle + self.orientation_angle)]
+        end_point = [self.center_x + self.radius * math.cos(self.end_angle + self.orientation_angle), self.center_y + self.radius * math.sin(self.end_angle + self.orientation_angle)]
+        start_vector = np.subtract(start_point, [self.center_x, self.center_y])
+        end_vector = np.subtract(end_point, [self.center_x, self.center_y])
+        if self.end_angle - self.start_angle >= 0:
+            # counterclockwise from start to end
+            # normal should be turned clockwise for start
+            # normal should be turned counterclockwise for end
+            start_vector = RigidBody.get_unit_vector(RigidBody.transform(start_vector, -np.pi / 2))
+            end_vector = RigidBody.get_unit_vector(RigidBody.transform(end_vector, np.pi / 2))
+        else:
+            # clockwise from start to end
+            # normal should be turned counterclockwise for start
+            # normal should be turned clockwise for end
+            start_vector = RigidBody.get_unit_vector(RigidBody.transform(start_vector, np.pi / 2))
+            end_vector = RigidBody.get_unit_vector(RigidBody.transform(end_vector, -np.pi / 2))
+        return [test, start_vector, end_vector]
 
     def apply_force(self, force:list[float]):
         self.force = force
