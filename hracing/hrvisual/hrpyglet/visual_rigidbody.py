@@ -170,10 +170,10 @@ class VisualCircleComponent(VisualComponent):
 
 class VisualArcComponent(VisualComponent):
 
-    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Arc, start_angle: float, end_angle: float) -> None:
+    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Arc, start_angle: float, angle_span:float=2 * np.pi) -> None:
         self.batch = batch
         self._ref_rigid_body = ref_rigid_body 
-        self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = end_angle - start_angle)
+        self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = angle_span)
         self.arc.color = (235, 64, 52)
     
     def add_to_batch(self, batch: Batch):
@@ -192,14 +192,35 @@ class VisualArcComponent(VisualComponent):
 class VisualArcBody(VisualRigidBody):
 
     def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500):
-        self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=0, angle_span=angle_span, mass=mass)
-        self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=self._rigid_body.orientation_angle, end_angle=self._rigid_body.orientation_angle + self._rigid_body.angle_span)
+        self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass)
+        self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
+
+class VisualArcComponent2(VisualComponent):
+
+    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Arc, start_angle: float, end_angle: float) -> None:
+        self.batch = batch
+        self._ref_rigid_body = ref_rigid_body 
+        self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = end_angle - start_angle)
+        self.arc.color = (235, 64, 52)
+    
+    def add_to_batch(self, batch: Batch):
+        self.arc = shapes.Arc(self.center_x, self.center_y, radius=self.radius, batch=batch, start_angle=self.start_angle, angle = self.end_angle - self.start_angle)
+        self.arc.color = (235, 64, 52)
+
+    def remove_from_batch(self):
+        self.arc = None
+    
+    def update_visual(self):
+        if self.arc == None:
+            self.add_to_batch(self.batch)
+        self.arc.x = self._ref_rigid_body.center_x
+        self.arc.y = self._ref_rigid_body.center_y
 
 class VisualArcBody2(VisualRigidBody):
 
     def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, start_angle:float, end_angle: float, orientation_angle:float= 0, mass:float = 500):
         self._rigid_body = rigidbody.Arc2(center_x=center_x, center_y=center_y, radius=radius, start_angle=start_angle, end_angle=end_angle, mass=mass)
-        self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=start_angle, end_angle=end_angle)
+        self._visual_component = VisualArcComponent2(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=start_angle, end_angle=end_angle)
 
 class VisualCircleBody(VisualRigidBody):
     

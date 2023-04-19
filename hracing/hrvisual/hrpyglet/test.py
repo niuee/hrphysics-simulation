@@ -31,11 +31,13 @@ class PhysicsTestGUI(App):
         # self.world.rigid_bodies[-1].moving_static =  True
         self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
         # self.world.add_rigid_body(VisualPolygonBody(0, 300, [[-1, -3], [-1, 3], [3, 4], [5, 0], [3, -4]], self.child_batch))
-        self.arc_test = VisualArcBody(0, 0, 200, self.child_batch, orientation_angle=0, angle_span=np.pi/2)
-        self.world.add_rigid_body(self.arc_test)
-        # self.arc_test2 = VisualArcBody2(0, 0, 200, self.child_batch, start_angle=0, end_angle=np.pi/2)
-        # self.world.add_rigid_body(self.arc_test2)
+        # self.arc_test = VisualArcBody(0, 0, 200, self.child_batch, orientation_angle=0, angle_span=np.pi/2)
+        # self.world.add_rigid_body(self.arc_test)
+        self.arc_test2 = VisualArcBody2(0, 0, 200, self.child_batch, start_angle=0, end_angle=np.pi/2)
+        self.world.add_rigid_body(self.arc_test2)
         # self.world.add_rigid_body(VisualCircleBody(0, 0, 200, self.child_batch))
+        self.world.rigid_bodies[-1].is_static =  True
+        self.world.add_rigid_body(VisualArcBody(0, -20, 220, self.child_batch, orientation_angle=np.pi/2, angle_span=np.pi/2))
         self.world.rigid_bodies[-1].is_static =  True
         self.time = 0
         # self.world.rigid_bodies[-1].is_static = True

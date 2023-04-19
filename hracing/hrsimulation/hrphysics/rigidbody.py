@@ -240,10 +240,10 @@ class Rect(RigidBody):
 
 class Arc(RigidBody):
 
-    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle = 0, mass= 500, is_static=True):
+    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=True):
         super().__init__(center_x, center_y, orientation_angle, mass)
         self.radius = radius
-        self.orientation_angle = 0
+        self.orientation_angle = orientation_angle
         self.start_point = [0, 0]
         self.end_point = [0, 0]
         if angle_span < 0:
@@ -275,6 +275,8 @@ class Arc(RigidBody):
         self.start_point = np.add([self.center_x, self.center_y], base_vector)
         base_vector = RigidBody.transform(base_vector, self.angle_span)
         self.end_point = np.add([self.center_x, self.center_y], base_vector)
+        print("start point:", self.start_point)
+        print("end point:", self.end_point)
 
 
     def get_min_max_projection(self, unit_vector: list[float]):
