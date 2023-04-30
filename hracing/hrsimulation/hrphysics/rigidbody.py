@@ -19,7 +19,7 @@ class RigidBody(ABC):
         self.is_static = False
         self.miu_s = 0.3
         self.miu_k = 0.7
-        self.friction = False
+        self.friction = True
         self.moving_static = False
     
     
@@ -200,7 +200,7 @@ class Rect(RigidBody):
         self.bottom_right = np.add([self.center_x, self.center_y], self.bottom_right)
 
     def get_min_max_projection(self, unit_vector):
-        self.update_vertices()
+        # self.update_vertices()
         top_left = np.dot(unit_vector, self.top_left)
         top_right = np.dot(unit_vector, self.top_right)
         bottom_left = np.dot(unit_vector, self.bottom_left)
@@ -275,8 +275,8 @@ class Arc(RigidBody):
         self.start_point = np.add([self.center_x, self.center_y], base_vector)
         base_vector = RigidBody.transform(base_vector, self.angle_span)
         self.end_point = np.add([self.center_x, self.center_y], base_vector)
-        print("start point:", self.start_point)
-        print("end point:", self.end_point)
+        # print("start point:", self.start_point)
+        # print("end point:", self.end_point)
 
 
     def get_min_max_projection(self, unit_vector: list[float]):

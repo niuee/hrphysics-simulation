@@ -7,54 +7,6 @@ class Collisions:
         pass
 
     @staticmethod
-    def intersects(body_a:RigidBody, body_b: RigidBody):
-        axis = []
-        body_a_axis = body_a.get_collision_axis(body_b)
-        body_b_axis = body_b.get_collision_axis(body_a)
-        axis.extend(body_a_axis)
-        axis.extend(body_b_axis)
-        collision = True
-        min_depth = float("inf")
-        min_axis = axis[0]
-
-        print("########")
-        print("body_a_axis:", body_a_axis)
-        print("body_b_axis:", body_b_axis)
-        for proj_axis in axis:
-            body_a_interval = body_a.get_min_max_projection(proj_axis)
-            body_b_interval = body_b.get_min_max_projection(proj_axis)
-            print("body_a_interval", body_a_interval)
-            print("body_b_interval", body_b_interval)
-            if body_a_interval[0] >= body_b_interval[1] or body_b_interval[0] >= body_a_interval[1]:
-                print("at vector", proj_axis)
-                collision = False
-                break
-            else:
-                depth = abs(min(body_a_interval[1], body_b_interval[1]) - max(body_b_interval[0], body_a_interval[0]))
-                if depth < min_depth:
-                    min_depth = depth
-                    min_axis = proj_axis
-                    if body_a_interval[1] < body_b_interval[1]:
-                        min_axis = np.multiply(-1, min_axis)
-        if collision:
-            # print("Two Objects Colliding:", collision)
-            # print("Should move body A {}m in the [{}, {}] direction and body B in the [{}, {}]".format(min_depth / 2, min_axis[0], min_axis[1], -min_axis[0], -min_axis[1]))
-            return [collision, min_depth, min_axis]
-        else:
-            return [False, None, None]
-
-    @staticmethod
-    def intersects_aabb(aabb_a:list[list[float]], aabb_b:list[list[float]]):
-        # compare x axis
-        if (aabb_a[0][0] <= aabb_b[1][0] and aabb_b[0][0] <= aabb_a[1][0]) or (aabb_a[0][1] <= aabb_b[1][1] and aabb_b[0][1] <= aabb_a[1][1]):
-            return True
-        return False
-    
-    @staticmethod
-    def get_contact_points(body_a: RigidBody, body_b: RigidBody):
-        print("placeholder")
-
-    @staticmethod
     def broad_phase(bodies: list[RigidBody]):
         possible_combi = []
         # total_count = 0
@@ -64,6 +16,8 @@ class Collisions:
                 # total_count += 1
                 body_a = bodies[index]
                 body_b = bodies[jindex]
+                if body_a.is_static and body_b.is_static:
+                    continue
                 body_a_aabb = body_a.get_aabb()
                 body_b_aabb = body_b.get_aabb()
                 if not Collisions.intersects_aabb(body_a_aabb, body_b_aabb):
@@ -97,6 +51,54 @@ class Collisions:
 
                 if dynamic_control:
                     Collisions.resolve_collision(body_a, body_b, normal, depth, delta_time)
+
+    @staticmethod
+    def intersects_aabb(aabb_a:list[list[float]], aabb_b:list[list[float]]):
+        # compare x axis
+        if (aabb_a[0][0] <= aabb_b[1][0] and aabb_b[0][0] <= aabb_a[1][0]) and (aabb_a[0][1] <= aabb_b[1][1] and aabb_b[0][1] <= aabb_a[1][1]):
+            return True
+        return False
+    
+    @staticmethod
+    def get_contact_points(body_a: RigidBody, body_b: RigidBody):
+        print("placeholder")
+
+    @staticmethod
+    def intersects(body_a:RigidBody, body_b: RigidBody):
+        axis = []
+        body_a_axis = body_a.get_collision_axis(body_b)
+        body_b_axis = body_b.get_collision_axis(body_a)
+        axis.extend(body_a_axis)
+        axis.extend(body_b_axis)
+        collision = True
+        min_depth = float("inf")
+        min_axis = axis[0]
+
+        # print("########")
+        # print("body_a_axis:", body_a_axis)
+        # print("body_b_axis:", body_b_axis)
+        for proj_axis in axis:
+            body_a_interval = body_a.get_min_max_projection(proj_axis)
+            body_b_interval = body_b.get_min_max_projection(proj_axis)
+            # print("body_a_interval", body_a_interval)
+            # print("body_b_interval", body_b_interval)
+            if body_a_interval[0] >= body_b_interval[1] or body_b_interval[0] >= body_a_interval[1]:
+                # print("at vector", proj_axis)
+                collision = False
+                break
+            else:
+                depth = abs(min(body_a_interval[1], body_b_interval[1]) - max(body_b_interval[0], body_a_interval[0]))
+                if depth < min_depth:
+                    min_depth = depth
+                    min_axis = proj_axis
+                    if body_a_interval[1] < body_b_interval[1]:
+                        min_axis = np.multiply(-1, min_axis)
+        if collision:
+            # print("Two Objects Colliding!")
+            # print("Should move body A {}m in the [{}, {}] direction and body B in the [{}, {}]".format(min_depth / 2, min_axis[0], min_axis[1], -min_axis[0], -min_axis[1]))
+            return [collision, min_depth, min_axis]
+        else:
+            return [False, None, None]
 
     @staticmethod
     def resolve_collision(body_a: RigidBody, body_b: RigidBody, normal:list[float], depth:float, delta_time: float):
