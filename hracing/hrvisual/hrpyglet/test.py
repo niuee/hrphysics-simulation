@@ -3,7 +3,7 @@ import random
 from pyglet.gl import *
 from pyglet.window import mouse
 from pyglet import graphics, shapes, sprite, clock
-from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody, VisualArcBody2
+from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody
 from ...hrsimulation.hrphysics.rigidbody import RigidBody
 from ...hrsimulation.hrphysics import rigidbody
 from ...hrsimulation.hrphysics.world import World
@@ -19,24 +19,14 @@ class PhysicsTestGUI(App):
         
         super().__init__(width, height, *args, **kwargs)
         self.child_batch = pyglet.graphics.Batch()
-        self.ref_circle_2 = shapes.Arc(0, 0, 500, batch=self.child_batch)
-        self.ref_circle_2.color = (235, 64, 52)
-        # self.image = pyglet.resource.image('test.jpg')
-        # self.sprite = sprite.Sprite(self.image, batch=self.child_batch)
         clock.schedule_interval(self.update, 0.005) # update at 60Hz
         self.world = World()
         self.world.dynamic_control = True
-        # self.world.add_rigid_body(VisualRectBody(0, 300, 0.55, 2.4, self.child_batch, mass=500))
-        # self.world.rigid_bodies[-1].linear_velocity = [20, 0]
-        # self.world.rigid_bodies[-1].moving_static =  True
         self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
-        # self.world.add_rigid_body(VisualPolygonBody(0, 300, [[-1, -3], [-1, 3], [3, 4], [5, 0], [3, -4]], self.child_batch))
-        # self.arc_test = VisualArcBody(0, 0, 200, self.child_batch, orientation_angle=0, angle_span=np.pi/2)
-        # self.world.add_rigid_body(self.arc_test)
-        self.arc_test2 = VisualArcBody(0, 0, 200, self.child_batch, orientation_angle=0, angle_span=np.pi/2)
-        self.world.add_rigid_body(self.arc_test2)
-        # self.world.add_rigid_body(VisualCircleBody(0, 0, 200, self.child_batch))
-        self.world.rigid_bodies[-1].is_static =  True
+        # self.arc_test2 = VisualArcBody(0, 0, 200, self.child_batch, orientation_angle=0, angle_span=np.pi/2)
+        # self.world.add_rigid_body(self.arc_test2)
+        # # self.world.add_rigid_body(VisualCircleBody(0, 0, 200, self.child_batch))
+        # self.world.rigid_bodies[-1].is_static =  True
         self.world.add_rigid_body(VisualArcBody(0, -20, 220, self.child_batch, orientation_angle=np.pi/2, angle_span=np.pi/2))
         self.world.rigid_bodies[-1].is_static =  True
         self.time = 0

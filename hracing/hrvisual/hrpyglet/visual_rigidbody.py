@@ -217,11 +217,6 @@ class VisualArcBody(VisualRigidBody):
         self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass)
         self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
 
-class VisualArcBody2(VisualRigidBody):
-
-    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, start_angle:float, end_angle: float, orientation_angle:float= 0, mass:float = 500):
-        self._rigid_body = rigidbody.Arc2(center_x=center_x, center_y=center_y, radius=radius, start_angle=start_angle, end_angle=end_angle, mass=mass)
-        self._visual_component = VisualArcComponent2(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=start_angle, end_angle=end_angle)
 
 class VisualCircleBody(VisualRigidBody):
     
