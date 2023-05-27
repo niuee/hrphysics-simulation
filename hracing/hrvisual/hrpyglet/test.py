@@ -3,7 +3,7 @@ import random
 from pyglet.gl import *
 from pyglet.window import mouse
 from pyglet import graphics, shapes, sprite, clock
-from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody, VisualCrescentBody
+from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody, VisualCrescentBody, VisualConcaveArcBody
 from ...hrsimulation.hrphysics.rigidbody import RigidBody
 from ...hrsimulation.hrphysics import rigidbody
 from ...hrsimulation.hrphysics.world import World
@@ -22,15 +22,43 @@ class PhysicsTestGUI(App):
         clock.schedule_interval(self.update, 0.005) # update at 60Hz
         self.world = World()
         self.world.dynamic_control = True
-        self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
-        # self.arc_test2 = VisualArcBody(0, 0, 200, self.child_batch, orientation_angle=0, angle_span=np.pi/2)
-        # self.world.add_rigid_body(self.arc_test2)
-        # # self.world.add_rigid_body(VisualCircleBody(0, 0, 200, self.child_batch))
-        # self.world.rigid_bodies[-1].is_static =  True
-        self.world.add_rigid_body(VisualCrescentBody(0, -20, 220, self.child_batch, orientation_angle=0, angle_span=-np.pi/2))
-        self.world.rigid_bodies[-1].is_static =  True
+        self.world.add_rigid_body(VisualPolygonBody(0, 0, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500))
+        # self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
+        # self.world.add_rigid_body(VisualPolygonBody(10, -5, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
+        # self.world.add_rigid_body(VisualPolygonBody(9.9, -4.9, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
+        # self.world.add_rigid_body(VisualCrescentBody(0, -20, 220, self.child_batch, orientation_angle=0, angle_span=-np.pi/2, is_static=True))
+
+        # self.world.add_rigid_body(VisualConcaveArcBody(0, -20, 220, self.child_batch, orientation_angle=0, angle_span=-np.pi/2, is_static=True))
+
+        self.add_outer_fence(0, -20, 220, self.child_batch, -np.pi/2)
         self.time = 0
-        # self.world.rigid_bodies[-1].is_static = True
+    
+
+    def add_outer_fence(self, center_x, center_y, radius, batch: graphics.Batch, angle_span:float, orientation_angle:float = 0, step_angle_deg=5, mass= 500, is_static=True):
+        step_angle = np.radians(step_angle_deg)
+        if angle_span < 0:
+            orientation_angle += angle_span
+            angle_span = -angle_span
+        base_vector = [radius, 0]
+        base_vector = RigidBody.transform(base_vector, orientation_angle)
+        start_point = np.add([center_x, center_y], base_vector)
+        extend_length = 1
+        num_steps = int(angle_span // step_angle)
+        for _ in range(num_steps):
+            start_point = np.add([center_x, center_y], base_vector)
+            adjacent_point = np.add([center_x, center_y], RigidBody.transform(base_vector, step_angle))
+            opposite_point = np.add(start_point, np.multiply(RigidBody.get_unit_vector(base_vector), extend_length))
+            opposite_of_adjacent_point = np.add(adjacent_point, np.multiply(RigidBody.get_unit_vector(RigidBody.transform(base_vector, step_angle)), extend_length))
+            x_centroid = sum([start_point[0], adjacent_point[0], opposite_point[0], opposite_of_adjacent_point[0]]) / 4
+            y_centroid = sum([start_point[1], adjacent_point[1], opposite_point[1], opposite_of_adjacent_point[1]]) / 4
+            start_point = np.subtract(start_point, [x_centroid, y_centroid])
+            adjacent_point = np.subtract(adjacent_point, [x_centroid, y_centroid])
+            opposite_point = np.subtract(opposite_point, [x_centroid, y_centroid])
+            opposite_of_adjacent_point = np.subtract(opposite_of_adjacent_point, [x_centroid, y_centroid])
+            self.world.add_rigid_body(VisualPolygonBody(x_centroid, y_centroid,[start_point, adjacent_point, opposite_of_adjacent_point, opposite_point], batch, mass=mass, is_static=is_static))
+            base_vector = RigidBody.transform(base_vector, step_angle)
+        
+        return
 
     def on_mouse_press(self, x, y, button, modifiers):
         if modifiers == pyglet.window.key.MOD_SHIFT:

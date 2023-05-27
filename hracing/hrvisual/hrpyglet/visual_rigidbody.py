@@ -71,6 +71,39 @@ class VisualComponent(ABC):
     def update_visual(self):
         pass
 
+class VisualConcaveArcComponent(VisualComponent):
+    def __init__(self, batch: Batch, center_x: float, center_y: float, ref_rigid_body: rigidbody.ConcaveArc):
+        self.batch = batch
+        self.vertex_list = None
+        self._ref_rigid_body = ref_rigid_body
+        self.add_to_batch(self.batch)
+
+    def update_visual(self):
+        if self.vertex_list == None:
+            self.add_to_batch(self.batch)
+            return
+        points = []
+        for end_vertex_index in range(1, len(self._ref_rigid_body.points)):
+            points.extend(self._ref_rigid_body.points[end_vertex_index - 1].tolist())
+            points.extend(self._ref_rigid_body.points[end_vertex_index].tolist())
+        self.vertex_list.vertices = points
+
+    def add_to_batch(self, batch: Batch):
+        if self.vertex_list != None:
+            return
+        points = []
+        for end_vertex_index in range(1, len(self._ref_rigid_body.points)):
+            points.extend(self._ref_rigid_body.points[end_vertex_index - 1].tolist())
+            points.extend(self._ref_rigid_body.points[end_vertex_index].tolist())
+        count = len(self._ref_rigid_body.points) - 1
+        self.vertex_list = batch.add(count * 2, gl.GL_LINES, None, ('v2d', tuple(points)), ('c3B', (235, 64, 52) * count * 2))
+
+    def remove_from_batch(self):
+        if self.vertex_list == None:
+            return
+        self.vertex_list.delete()
+        self.vertex_list = None
+
 class VisualPolygonComponent(VisualComponent):
     def __init__(self, batch: Batch, center_x: float, center_y: float, vertices: list[list[float]], ref_rigid_body: rigidbody.Polygon):
         self.batch = batch
@@ -212,34 +245,39 @@ class VisualCrescentComponent(VisualComponent):
     
 class VisualCrescentBody(VisualRigidBody):
 
-    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500):
-        self._rigid_body = rigidbody.Crescent(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass)
+    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500, is_static:bool=False):
+        self._rigid_body = rigidbody.Crescent(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass, is_static=is_static)
         self._visual_component = VisualCrescentComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
 
 
 class VisualArcBody(VisualRigidBody):
 
-    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500):
-        self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass)
+    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500, is_static:bool=False):
+        self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass, is_static=is_static)
         self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
 
+class VisualConcaveArcBody(VisualRigidBody):
+
+    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500, is_static:bool=False):
+        self._rigid_body = rigidbody.ConcaveArc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass, is_static=is_static)
+        self._visual_component = VisualConcaveArcComponent(batch, center_x, center_y, self._rigid_body)
 
 class VisualCircleBody(VisualRigidBody):
     
-    def __init__(self, center_x:float, center_y:float, radius:float, batch:Batch, orientation_angle=0, mass=500):
-        self._rigid_body = Circle(center_x, center_y, radius, orientation_angle, mass)
+    def __init__(self, center_x:float, center_y:float, radius:float, batch:Batch, orientation_angle=0, mass=500, is_static=False):
+        self._rigid_body = Circle(center_x, center_y, radius, orientation_angle, mass, is_static)
         self._visual_component = VisualCircleComponent(batch, center_x, center_y, radius, self._rigid_body)
 
 class VisualRectBody(VisualRigidBody):
 
-    def __init__(self, center_x, center_y, width, length, batch:Batch, orientation_angle=0, mass=500):
-        self._rigid_body = Rect(center_x, center_y, width, length, orientation_angle, mass)
+    def __init__(self, center_x, center_y, width, length, batch:Batch, orientation_angle=0, mass=500, is_static=False):
+        self._rigid_body = Rect(center_x, center_y, width, length, orientation_angle, mass, is_static)
         self._visual_component = VisualRectComponent(batch, center_x, center_y, width, length, orientation_angle, self._rigid_body)
 
 class VisualPolygonBody(VisualRigidBody):
 
-    def __init__(self, center_x, center_y, vertices: list[list[float]], batch: Batch, orientation_angle:float=0, mass: float = 500):
-        self._rigid_body = rigidbody.Polygon(center_x, center_y, vertices, orientation_angle, mass)
+    def __init__(self, center_x, center_y, vertices: list[list[float]], batch: Batch, orientation_angle:float=0, mass: float = 500, is_static=False):
+        self._rigid_body = rigidbody.Polygon(center_x, center_y, vertices, orientation_angle, mass, is_static)
         self._visual_component = VisualPolygonComponent(batch, center_x, center_y, vertices, self._rigid_body)
 
 if __name__ == "__main__":

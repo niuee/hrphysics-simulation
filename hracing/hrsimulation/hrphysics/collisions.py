@@ -54,7 +54,6 @@ class Collisions:
 
     @staticmethod
     def intersects_aabb(aabb_a:list[list[float]], aabb_b:list[list[float]]):
-        # compare x axis
         if (aabb_a[0][0] <= aabb_b[1][0] and aabb_b[0][0] <= aabb_a[1][0]) and (aabb_a[0][1] <= aabb_b[1][1] and aabb_b[0][1] <= aabb_a[1][1]):
             return True
         return False

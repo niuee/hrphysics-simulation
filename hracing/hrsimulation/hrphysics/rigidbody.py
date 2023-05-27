@@ -5,7 +5,7 @@ import math
 
 class RigidBody(ABC):
     
-    def __init__(self, center_x, center_y, orientation_angle, mass:float = 500):
+    def __init__(self, center_x, center_y, orientation_angle, mass:float = 500, is_static=False):
         self.center_x = center_x
         self.center_y = center_y
         self.orientation_angle = orientation_angle
@@ -16,7 +16,7 @@ class RigidBody(ABC):
         self.angular_velocity:float = 0
         self.angular_acceleration:float = 0
         self.force:list[float] = [0, 0]
-        self.is_static = False
+        self.is_static = is_static
         self.miu_s = 0.3
         self.miu_k = 0.7
         self.friction = True
@@ -85,8 +85,8 @@ class RigidBody(ABC):
 
 class Polygon(RigidBody):
 
-    def __init__(self, center_x:float, center_y:float, vertices: list[list[float]], orientation_angle: float=0, mass:float=500):
-        super().__init__(center_x, center_y, orientation_angle, mass)
+    def __init__(self, center_x:float, center_y:float, vertices: list[list[float]], orientation_angle: float=0, mass:float=500, is_static=False):
+        super().__init__(center_x, center_y, orientation_angle, mass, is_static)
         self.vertices = vertices
         self.update_vertices()
     
@@ -156,8 +156,8 @@ class Polygon(RigidBody):
 
 class Rect(RigidBody):
 
-    def __init__(self, center_x, center_y, width, length, orientation_angle:float=0, mass:float=500):
-        super().__init__(center_x, center_y, orientation_angle, mass)
+    def __init__(self, center_x, center_y, width, length, orientation_angle:float=0, mass:float=500, is_static=False):
+        super().__init__(center_x, center_y, orientation_angle, mass, is_static)
         self.width = width
         self.length = length
         self.update_vertices()
@@ -240,8 +240,8 @@ class Rect(RigidBody):
 
 class Crescent(RigidBody):
 
-    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=True):
-        super().__init__(center_x, center_y, orientation_angle, mass)
+    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=False):
+        super().__init__(center_x, center_y, orientation_angle, mass, is_static)
         self.radius = radius
         self.orientation_angle = orientation_angle
         self.start_point = [0, 0]
@@ -326,17 +326,115 @@ class Crescent(RigidBody):
         mid_angle = self.angle_span / 2
         vecC2M = RigidBody.transform(np.subtract(self.start_point, [self.center_x, self.center_y]), mid_angle)
         mid_point = np.add([self.center_x, self.center_y], vecC2M)
-        x_min = min(mid_point[0], start_point[0], end_point[0], self.center_x)
-        x_max = max(mid_point[0], start_point[0], end_point[0], self.center_x)
-        y_min = min(mid_point[1], start_point[1], end_point[1], self.center_y)
-        y_max = max(mid_point[1], start_point[1], end_point[1], self.center_y)
+        x_min = min(mid_point[0], start_point[0], end_point[0])
+        x_max = max(mid_point[0], start_point[0], end_point[0])
+        y_min = min(mid_point[1], start_point[1], end_point[1])
+        y_max = max(mid_point[1], start_point[1], end_point[1])
+        res = [[x_min, y_min], [x_max, y_max]]
+        return res 
+
+class ConcaveArc(RigidBody):
+
+    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, step_angle_deg=5, mass= 500, is_static=False):
+        super().__init__(center_x, center_y, orientation_angle, mass, is_static)
+        self.radius = radius
+        self.orientation_angle = orientation_angle
+        self.step_angle = step_angle_deg * np.pi / 180
+        self.start_point = [0, 0]
+        self.end_point = [0, 0]
+        self.points = []
+        if angle_span < 0:
+            self.orientation_angle += angle_span
+            self.angle_span = -angle_span
+        else:
+            self.angle_span = angle_span
+        self.update_vertices()
+
+    def step(self, delta_time, dynamic_control):
+        if dynamic_control:
+            if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
+                # print("static friction prevent moving")
+                self.update_vertices()
+                return
+            kinetic_friction_direction = np.multiply(-1, RigidBody.get_unit_vector(self.linear_velocity))
+            kinetic_friction = np.multiply(self.miu_k * self.mass * 9.81, kinetic_friction_direction)
+            self.force = np.add(self.force, kinetic_friction)
+        self.linear_velocity[0] += (self.force[0] * delta_time) / self.mass
+        self.linear_velocity[1] += (self.force[1] * delta_time) /self.mass
+        self.center_x += self.linear_velocity[0] * delta_time
+        self.center_y += self.linear_velocity[1] * delta_time
+        self.force = [0, 0]
+        self.update_vertices()
+    
+    def update_vertices(self):
+        base_vector = [self.radius, 0]
+        base_vector = RigidBody.transform(base_vector, self.orientation_angle)
+        self.start_point = np.add([self.center_x, self.center_y], base_vector)
+        num_steps = int(self.angle_span // self.step_angle)
+        self.points= []
+        self.points.append(self.start_point)
+        for _ in range(num_steps):
+            base_vector = RigidBody.transform(base_vector, self.step_angle)
+            cur_point = np.add([self.center_x, self.center_y], base_vector)
+            self.points.append(cur_point)
+        self.end_point = self.points[-1]
+        extend_length = 1
+        self.points.append(np.add(self.end_point, np.multiply(RigidBody.get_unit_vector(base_vector),  extend_length)))
+        base_vector = np.add(base_vector, np.multiply(RigidBody.get_unit_vector(base_vector), extend_length))
+        for _ in range(num_steps):
+            base_vector = RigidBody.transform(base_vector, -self.step_angle)
+            cur_point = np.add([self.center_x, self.center_y], base_vector)
+            self.points.append(cur_point)
+        self.points.append(self.start_point)
+        return
+
+
+    def get_min_max_projection(self, unit_vector: list[float]):
+        self.update_vertices()
+        min_val = float("inf")
+        max_val = float("-inf")
+        for point in self.points:
+            projection = np.dot(point, unit_vector)
+            min_val = min(min_val, projection)
+            max_val = max(max_val, projection) 
+        return  [min_val, max_val]
+
+    def get_collision_axis(self, relative_body:RigidBody):
+        self.update_vertices()
+        res = []
+        for point_index in range(1, len(self.points)):
+            vector = np.subtract(self.points[point_index], self.points[point_index - 1])
+            res.append(RigidBody.get_unit_vector(RigidBody.transform(vector, np.pi / 2)))
+        return res 
+
+    def apply_force(self, force:list[float]):
+        self.force = force
+        return
+
+    def apply_force_in_orientation(self, force:list[float]):
+        force_transformed = RigidBody.transform(force, self.orientation_angle)
+        self.force = force_transformed
+        return  
+
+    def get_aabb(self):
+        self.update_vertices()
+        x_max = float("-inf")
+        x_min = float("inf")
+        y_max = float("-inf")
+        y_min = float("inf")
+        for point in self.points:
+            x_max = max(x_max, point[0])
+            x_min = min(x_min, point[0])
+            y_max = max(y_max, point[1])
+            y_min = min(y_min, point[1])
+
         res = [[x_min, y_min], [x_max, y_max]]
         return res 
 
 class Arc(RigidBody):
 
-    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=True):
-        super().__init__(center_x, center_y, orientation_angle, mass)
+    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=False):
+        super().__init__(center_x, center_y, orientation_angle, mass, is_static)
         self.radius = radius
         self.orientation_angle = orientation_angle
         self.start_point = [0, 0]
@@ -427,8 +525,8 @@ class Arc(RigidBody):
         
 class Circle(RigidBody):
 
-    def __init__(self, center_x, center_y, radius, orientaion_angle:float=0, mass:float=500):
-        super().__init__(center_x, center_y, orientaion_angle, mass)
+    def __init__(self, center_x, center_y, radius, orientaion_angle:float=0, mass:float=500, is_static=False):
+        super().__init__(center_x, center_y, orientaion_angle, mass, is_static)
         self.radius = radius
         self.area = np.pi * self.radius ** 2
     

@@ -1,4 +1,4 @@
-from .rigidbody import RigidBody, Rect, Circle
+from .rigidbody import RigidBody, Rect, Circle, Polygon
 from .collisions import Collisions 
 import numpy as np
 import threading
@@ -21,6 +21,28 @@ class World:
         Collisions.narrow_phase(self.rigid_bodies, possible_combinations, dt, self.dynamic_control)
         for body in self.rigid_bodies:
             body.step(dt, self.dynamic_control)
+    
+    def add_outer_fence(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, step_angle_deg=5, mass= 500, is_static=True):
+        step_angle = np.radians(step_angle_deg)
+        if angle_span < 0:
+            orientation_angle += angle_span
+            angle_span = -angle_span
+        else:
+            angle_span = angle_span
+        base_vector = [radius, 0]
+        base_vector = RigidBody.transform(base_vector, orientation_angle)
+        start_point = np.add([center_x, center_y], base_vector)
+        extend_length = 1
+        num_steps = int(angle_span // step_angle)
+        for _ in range(num_steps):
+            adjacent_point = np.add([center_x, center_y], RigidBody.transform(base_vector, step_angle))
+            opposite_point = np.add([center_x, center_y], np.multiply(RigidBody.get_unit_vector(base_vector), extend_length))
+            opposite_of_adjacent_point = np.add([center_x, center_y], np.multiply(RigidBody.get_unit_vector(RigidBody.transform(base_vector, step_angle)), extend_length))
+            x_centroid = sum([start_point[0], adjacent_point[0], opposite_point[0], opposite_of_adjacent_point[0]]) / 4
+            y_centroid = sum([start_point[1], adjacent_point[1], opposite_point[1], opposite_of_adjacent_point[1]]) / 4
+            self.add_rigid_body(Polygon(x_centroid, y_centroid,[start_point, adjacent_point, opposite_of_adjacent_point, opposite_point], mass, is_static))
+            base_vector = RigidBody.transform(base_vector, step_angle)
+        return
 
 
 class RandWithWeight:
