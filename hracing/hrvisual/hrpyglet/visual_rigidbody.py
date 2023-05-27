@@ -201,9 +201,9 @@ class VisualCircleComponent(VisualComponent):
         self.circle.x = self._ref_rigid_body.center_x
         self.circle.y = self._ref_rigid_body.center_y
 
-class VisualArcComponent(VisualComponent):
+class VisualFanComponent(VisualComponent):
 
-    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Arc, start_angle: float, angle_span:float=2 * np.pi) -> None:
+    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Fan, start_angle: float, angle_span:float=2 * np.pi) -> None:
         self.batch = batch
         self._ref_rigid_body = ref_rigid_body 
         self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = angle_span)
@@ -224,7 +224,7 @@ class VisualArcComponent(VisualComponent):
 
 class VisualCrescentComponent(VisualComponent):
 
-    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Arc, start_angle: float, angle_span:float=2 * np.pi) -> None:
+    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Crescent, start_angle: float, angle_span:float=2 * np.pi) -> None:
         self.batch = batch
         self._ref_rigid_body = ref_rigid_body 
         self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = angle_span)
@@ -250,11 +250,11 @@ class VisualCrescentBody(VisualRigidBody):
         self._visual_component = VisualCrescentComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
 
 
-class VisualArcBody(VisualRigidBody):
+class VisualFanBody(VisualRigidBody):
 
     def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500, is_static:bool=False):
-        self._rigid_body = rigidbody.Arc(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass, is_static=is_static)
-        self._visual_component = VisualArcComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
+        self._rigid_body = rigidbody.Fan(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass, is_static=is_static)
+        self._visual_component = VisualFanComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
 
 class VisualConcaveArcBody(VisualRigidBody):
 

@@ -431,7 +431,7 @@ class ConcaveArc(RigidBody):
         res = [[x_min, y_min], [x_max, y_max]]
         return res 
 
-class Arc(RigidBody):
+class Fan(RigidBody):
 
     def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=False):
         super().__init__(center_x, center_y, orientation_angle, mass, is_static)
