@@ -1,4 +1,3 @@
-from ...hrsimulation.hrphysics.rigidbody import RigidBody, Rect, Circle, Crescent
 from ...hrsimulation.hrphysics import rigidbody
 from pyglet.graphics import Batch
 from pyglet import gl, shapes
@@ -7,17 +6,17 @@ import numpy as np
 
 RIGID_BODY_ATTRS = set({"center_x", "center_y", "orientation_angle", "mass", "linear_velocity", "linear_acceleration", "is_static", "moving_static", "radius", "miu_k", "miu_s", "force", "start_angle", "end_angle", "angle_span","start_point", "end_point"})
 
-class VisualRigidBody(RigidBody):
+class VisualRigidBody(rigidbody.RigidBody):
 
     def __init__(self, center_x, center_y, orientation_angle, mass: float = 500):
-        self._rigid_body:RigidBody = None
+        self._rigid_body:rigidbody.RigidBody = None
         self._visual_component: VisualComponent = None
 
 
     def get_min_max_projection(self, unit_vector:list[float]):
         return self._rigid_body.get_min_max_projection(unit_vector)
     
-    def get_collision_axis(self, relative_body: RigidBody):
+    def get_collision_axis(self, relative_body: rigidbody.RigidBody):
         return self._rigid_body.get_collision_axis(relative_body)
 
     def move(self, dx, dy):
@@ -139,7 +138,7 @@ class VisualPolygonComponent(VisualComponent):
 
 class VisualRectComponent(VisualComponent):
 
-    def __init__(self, batch: Batch, center_x:float, center_y:float, width: float, length:float, orientation_angle:float, ref_rigid_body: Rect):
+    def __init__(self, batch: Batch, center_x:float, center_y:float, width: float, length:float, orientation_angle:float, ref_rigid_body: rigidbody.Rect):
         self.batch = batch
         self.vertex_list = None
         self._ref_rigid_body = ref_rigid_body
@@ -182,7 +181,7 @@ class VisualRectComponent(VisualComponent):
     
 class VisualCircleComponent(VisualComponent):
 
-    def __init__(self, batch: Batch, center_x:float, center_y:float, radius:float, ref_rigid_body):
+    def __init__(self, batch: Batch, center_x:float, center_y:float, radius:float, ref_rigid_body: rigidbody.Circle):
         self.batch = batch
         self.circle = shapes.Arc(center_x, center_y, radius=radius, batch=batch)
         self.circle.color = (235, 64, 52)
@@ -265,13 +264,13 @@ class VisualConcaveArcBody(VisualRigidBody):
 class VisualCircleBody(VisualRigidBody):
     
     def __init__(self, center_x:float, center_y:float, radius:float, batch:Batch, orientation_angle=0, mass=500, is_static=False):
-        self._rigid_body = Circle(center_x, center_y, radius, orientation_angle, mass, is_static)
+        self._rigid_body = rigidbody.Circle(center_x, center_y, radius, orientation_angle, mass, is_static)
         self._visual_component = VisualCircleComponent(batch, center_x, center_y, radius, self._rigid_body)
 
 class VisualRectBody(VisualRigidBody):
 
     def __init__(self, center_x, center_y, width, length, batch:Batch, orientation_angle=0, mass=500, is_static=False):
-        self._rigid_body = Rect(center_x, center_y, width, length, orientation_angle, mass, is_static)
+        self._rigid_body = rigidbody.Rect(center_x, center_y, width, length, orientation_angle, mass, is_static)
         self._visual_component = VisualRectComponent(batch, center_x, center_y, width, length, orientation_angle, self._rigid_body)
 
 class VisualPolygonBody(VisualRigidBody):
