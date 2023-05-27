@@ -1,4 +1,4 @@
-from ...hrsimulation.hrphysics.rigidbody import RigidBody, Rect, Circle
+from ...hrsimulation.hrphysics.rigidbody import RigidBody, Rect, Circle, Crescent
 from ...hrsimulation.hrphysics import rigidbody
 from pyglet.graphics import Batch
 from pyglet import gl, shapes
@@ -188,14 +188,13 @@ class VisualArcComponent(VisualComponent):
             self.add_to_batch(self.batch)
         self.arc.x = self._ref_rigid_body.center_x
         self.arc.y = self._ref_rigid_body.center_y
-    
 
-class VisualArcComponent2(VisualComponent):
+class VisualCrescentComponent(VisualComponent):
 
-    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Arc, start_angle: float, end_angle: float) -> None:
+    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Arc, start_angle: float, angle_span:float=2 * np.pi) -> None:
         self.batch = batch
         self._ref_rigid_body = ref_rigid_body 
-        self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = end_angle - start_angle)
+        self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = angle_span)
         self.arc.color = (235, 64, 52)
     
     def add_to_batch(self, batch: Batch):
@@ -210,6 +209,13 @@ class VisualArcComponent2(VisualComponent):
             self.add_to_batch(self.batch)
         self.arc.x = self._ref_rigid_body.center_x
         self.arc.y = self._ref_rigid_body.center_y
+    
+class VisualCrescentBody(VisualRigidBody):
+
+    def __init__(self, center_x: float, center_y: float, radius: float, batch: Batch, orientation_angle:float= 0, angle_span:float = np.pi/2, mass:float = 500):
+        self._rigid_body = rigidbody.Crescent(center_x=center_x, center_y=center_y, radius=radius, orientation_angle=orientation_angle, angle_span=angle_span, mass=mass)
+        self._visual_component = VisualCrescentComponent(batch, center_x=center_x, center_y=center_y, radius=radius, ref_rigid_body=self._rigid_body, start_angle=orientation_angle, angle_span=angle_span)
+
 
 class VisualArcBody(VisualRigidBody):
 

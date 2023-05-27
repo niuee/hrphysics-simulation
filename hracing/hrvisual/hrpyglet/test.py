@@ -3,7 +3,7 @@ import random
 from pyglet.gl import *
 from pyglet.window import mouse
 from pyglet import graphics, shapes, sprite, clock
-from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody
+from .visual_rigidbody import VisualRectBody, VisualCircleBody, VisualArcBody, VisualPolygonBody, VisualCrescentBody
 from ...hrsimulation.hrphysics.rigidbody import RigidBody
 from ...hrsimulation.hrphysics import rigidbody
 from ...hrsimulation.hrphysics.world import World
@@ -27,7 +27,7 @@ class PhysicsTestGUI(App):
         # self.world.add_rigid_body(self.arc_test2)
         # # self.world.add_rigid_body(VisualCircleBody(0, 0, 200, self.child_batch))
         # self.world.rigid_bodies[-1].is_static =  True
-        self.world.add_rigid_body(VisualArcBody(0, -20, 220, self.child_batch, orientation_angle=np.pi/2, angle_span=np.pi/2))
+        self.world.add_rigid_body(VisualCrescentBody(0, -20, 220, self.child_batch, orientation_angle=0, angle_span=-np.pi/2))
         self.world.rigid_bodies[-1].is_static =  True
         self.time = 0
         # self.world.rigid_bodies[-1].is_static = True
@@ -170,4 +170,3 @@ class PhysicsTestGUI(App):
 
 
 PhysicsTestGUI(1024, 768).run()
-print("test")

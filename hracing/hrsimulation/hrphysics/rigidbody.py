@@ -238,6 +238,101 @@ class Rect(RigidBody):
 
         return [[x_min, y_min], [x_max, y_max]]
 
+class Crescent(RigidBody):
+
+    def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=True):
+        super().__init__(center_x, center_y, orientation_angle, mass)
+        self.radius = radius
+        self.orientation_angle = orientation_angle
+        self.start_point = [0, 0]
+        self.end_point = [0, 0]
+        if angle_span < 0:
+            self.orientation_angle += angle_span
+            self.angle_span = -angle_span
+        else:
+            self.angle_span = angle_span
+        self.update_vertices()
+
+    def step(self, delta_time, dynamic_control):
+        if dynamic_control:
+            if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
+                # print("static friction prevent moving")
+                self.update_vertices()
+                return
+            kinetic_friction_direction = np.multiply(-1, RigidBody.get_unit_vector(self.linear_velocity))
+            kinetic_friction = np.multiply(self.miu_k * self.mass * 9.81, kinetic_friction_direction)
+            self.force = np.add(self.force, kinetic_friction)
+        self.linear_velocity[0] += (self.force[0] * delta_time) / self.mass
+        self.linear_velocity[1] += (self.force[1] * delta_time) /self.mass
+        self.center_x += self.linear_velocity[0] * delta_time
+        self.center_y += self.linear_velocity[1] * delta_time
+        self.force = [0, 0]
+        self.update_vertices()
+    
+    def update_vertices(self):
+        base_vector = [self.radius, 0]
+        base_vector = RigidBody.transform(base_vector, self.orientation_angle)
+        self.start_point = np.add([self.center_x, self.center_y], base_vector)
+        base_vector = RigidBody.transform(base_vector, self.angle_span)
+        self.end_point = np.add([self.center_x, self.center_y], base_vector)
+        # print("start point:", self.start_point)
+        # print("end point:", self.end_point)
+
+
+    def get_min_max_projection(self, unit_vector: list[float]):
+        self.update_vertices()
+        extra_point = self.start_point
+        unit_vector_angle = RigidBody.angle_vectora2b(np.subtract(self.start_point, [self.center_x, self.center_y]), unit_vector)
+        rev_unit_vector = np.multiply(-1, unit_vector)
+        rev_unit_vector_angle = RigidBody.angle_vectora2b(np.subtract(self.start_point, [self.center_x, self.center_y]), rev_unit_vector)
+        # print("unit vector angle", unit_vector_angle)
+        # print("angle span:", self.angle_span)
+        if unit_vector_angle >= 0 and unit_vector_angle <= self.angle_span:
+            extra_point = np.add([self.center_x, self.center_y], np.multiply(unit_vector, self.radius))
+        elif rev_unit_vector_angle >= 0 and rev_unit_vector_angle <= self.angle_span:
+            extra_point = np.add([self.center_x, self.center_y], np.multiply(rev_unit_vector, self.radius))
+        proj_start = np.dot(self.start_point, unit_vector)
+        proj_end = np.dot(self.end_point, unit_vector)
+        proj_extra = np.dot(extra_point, unit_vector)
+        proj_center = np.dot([self.center_x, self.center_y], unit_vector)
+        res = [min(proj_start, proj_end, proj_extra), max(proj_start, proj_end, proj_extra)]
+        return res 
+
+    def get_collision_axis(self, relative_body:RigidBody):
+        self.update_vertices()
+        rel_axis = RigidBody.get_unit_vector([relative_body.center_x - self.center_x, relative_body.center_y - self.center_y])
+        start_vector = np.subtract(self.start_point, [self.center_x, self.center_y])
+        end_vector = np.subtract(self.end_point, [self.center_x, self.center_y])
+        start_vector = RigidBody.get_unit_vector(RigidBody.transform(start_vector, -np.pi / 2))
+        end_vector = RigidBody.get_unit_vector(RigidBody.transform(end_vector, np.pi / 2))
+        start2end_vector = np.subtract(self.end_point, self.start_point)
+        start2end_vector = RigidBody.transform(start2end_vector, np.pi / 2)
+        start2end_vector = RigidBody.get_unit_vector(start2end_vector)
+        return [rel_axis, start2end_vector]
+
+    def apply_force(self, force:list[float]):
+        self.force = force
+        return
+
+    def apply_force_in_orientation(self, force:list[float]):
+        force_transformed = RigidBody.transform(force, self.orientation_angle)
+        self.force = force_transformed
+        return  
+
+    def get_aabb(self):
+        self.update_vertices()
+        start_point = self.start_point
+        end_point = self.end_point
+        mid_angle = self.angle_span / 2
+        vecC2M = RigidBody.transform(np.subtract(self.start_point, [self.center_x, self.center_y]), mid_angle)
+        mid_point = np.add([self.center_x, self.center_y], vecC2M)
+        x_min = min(mid_point[0], start_point[0], end_point[0], self.center_x)
+        x_max = max(mid_point[0], start_point[0], end_point[0], self.center_x)
+        y_min = min(mid_point[1], start_point[1], end_point[1], self.center_y)
+        y_max = max(mid_point[1], start_point[1], end_point[1], self.center_y)
+        res = [[x_min, y_min], [x_max, y_max]]
+        return res 
+
 class Arc(RigidBody):
 
     def __init__(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, mass= 500, is_static=True):
