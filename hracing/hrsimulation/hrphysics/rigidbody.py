@@ -166,7 +166,7 @@ class Rect(RigidBody):
         self.area = self.length * self.width
         
     def step(self, delta_time, dynamic_control):
-        if dynamic_control and self.friction:
+        if dynamic_control:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(np.subtract(self.force, [0, 0])) > 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("cant move due to friction")
                 self.update_vertices()

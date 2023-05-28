@@ -9,7 +9,7 @@ class World:
 
     def __init__(self):
         self.rigid_bodies:list[RigidBody] = []
-        self.dynamic_control = True
+        self.simulation_active = True
 
     def add_rigid_body(self, body: RigidBody):
         self.rigid_bodies.append(body)
@@ -18,9 +18,9 @@ class World:
         # print("--------")
         # print("Body Count: ", len(self.rigid_bodies))
         possible_combinations = Collisions.broad_phase(self.rigid_bodies) 
-        Collisions.narrow_phase(self.rigid_bodies, possible_combinations, dt, self.dynamic_control)
+        Collisions.narrow_phase(self.rigid_bodies, possible_combinations, dt, self.simulation_active)
         for body in self.rigid_bodies:
-            body.step(dt, self.dynamic_control)
+            body.step(dt, self.simulation_active)
     
     def add_outer_fence(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, step_angle_deg=5, mass= 500, is_static=True):
         step_angle = np.radians(step_angle_deg)

@@ -29,7 +29,9 @@ class Collisions:
         return possible_combi
 
     @staticmethod
-    def narrow_phase(bodies: list[RigidBody], combinations: list[list[int]], delta_time, dynamic_control):
+    def narrow_phase(bodies: list[RigidBody], combinations: list[list[int]], delta_time, simulation_active):
+        if simulation_active == False:
+            return
         for body_a_index, body_b_index in combinations:
             # print("narrow phase")
             body_a = bodies[body_a_index]
@@ -49,7 +51,7 @@ class Collisions:
                     body_a.move(moveDisplacement[0], moveDisplacement[1])
                     body_b.move(moveDisplacement[0], moveDisplacement[1])
 
-                if dynamic_control:
+                if simulation_active:
                     Collisions.resolve_collision(body_a, body_b, normal, depth, delta_time)
 
     @staticmethod
@@ -127,6 +129,10 @@ class Collisions:
         # body_a.force = np.add(body_a.force, (np.multiply(inverse_mass_a / delta_time, [delta_a_velocity[0], delta_a_velocity[1]])))
         # body_b.force = np.add(body_b.force, (np.multiply(inverse_mass_b / delta_time, [delta_b_velocity[0], delta_b_velocity[1]])))
 
+
+        ''' 
+        This section hasn't been figured out yet. I haven't work out the math behind it something is not working; review pending. 
+        '''
         # body_b_initial_normal_velocity_scalar = np.dot(body_b.linear_velocity, normal)
         # body_a_inital_normal_velocity_scalar = np.dot(body_a.linear_velocity, normal)
 

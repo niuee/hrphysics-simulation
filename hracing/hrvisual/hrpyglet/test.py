@@ -21,7 +21,7 @@ class PhysicsTestGUI(App):
         self.child_batch = pyglet.graphics.Batch()
         clock.schedule_interval(self.update, 0.005) # update at 60Hz
         self.world = World()
-        self.world.dynamic_control = True
+        # self.world.simulation_active = False
         self.world.add_rigid_body(VisualPolygonBody(0, 0, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500))
         # self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
         # self.world.add_rigid_body(VisualPolygonBody(10, -5, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
@@ -85,32 +85,32 @@ class PhysicsTestGUI(App):
         enm = 3.34
         if self.keys[pyglet.window.key.UP]:
             if move_index < len(self.world.rigid_bodies):
-                if self.world.dynamic_control:    
+                if self.world.simulation_active:    
                     # self.world.rigid_bodies[move_index].apply_force([0, force_component])
                     self.world.rigid_bodies[move_index].apply_force_in_orientation([force_component, 0])
                 else:
-                    self.world.rigid_bodies[move_index].move(delta_movement, 0)
+                    self.world.rigid_bodies[move_index].move(0, delta_movement)
             extra_tangential_acceleration = etm
         if self.keys[pyglet.window.key.LEFT]:
             if move_index < len(self.world.rigid_bodies):
-                if self.world.dynamic_control:
+                if self.world.simulation_active:
                     # self.world.rigid_bodies[move_index].apply_force([-force_component, 0])
                     self.world.rigid_bodies[move_index].apply_force_in_orientation([0, force_component])
                 else:
                     # self.world.rigid_bodies[move_index].apply_force_in_orientation([-force_component, 0])
-                    self.world.rigid_bodies[move_index].move(0, delta_movement)
+                    self.world.rigid_bodies[move_index].move(-delta_movement, 0)
             extra_normal_accleration = -enm
         if self.keys[pyglet.window.key.DOWN]:
             if move_index < len(self.world.rigid_bodies):
-                if self.world.dynamic_control:
+                if self.world.simulation_active:
                     # self.world.rigid_bodies[move_index].apply_force([0, -force_component])
                     self.world.rigid_bodies[move_index].apply_force_in_orientation([-force_component, 0])
                 else:
-                    self.world.rigid_bodies[move_index].move(-delta_movement, 0)
+                    self.world.rigid_bodies[move_index].move(0, -delta_movement)
             extra_tangential_acceleration = -etm
         if self.keys[pyglet.window.key.RIGHT]:
             if move_index < len(self.world.rigid_bodies):
-                if self.world.dynamic_control:
+                if self.world.simulation_active:
                     # self.world.rigid_bodies[move_index].apply_force([force_component, 0])
                     self.world.rigid_bodies[move_index].apply_force_in_orientation([0, -force_component])
                 else:
