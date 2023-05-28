@@ -223,24 +223,56 @@ class VisualFanComponent(VisualComponent):
 
 class VisualCrescentComponent(VisualComponent):
 
-    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Crescent, start_angle: float, angle_span:float=2 * np.pi) -> None:
+    def __init__(self, batch: Batch, center_x: float, center_y: float, radius: float, ref_rigid_body: rigidbody.Crescent, start_angle: float, angle_span:float=2 * np.pi, draw_chord:bool=True) -> None:
         self.batch = batch
         self._ref_rigid_body = ref_rigid_body 
         self.arc = shapes.Arc(center_x, center_y, radius=radius, batch=batch, start_angle=start_angle, angle = angle_span)
         self.arc.color = (235, 64, 52)
+        self.chord_vertex_list = None
+        self.draw_chord = draw_chord
     
     def add_to_batch(self, batch: Batch):
         self.arc = shapes.Arc(self.center_x, self.center_y, radius=self.radius, batch=batch, start_angle=self.start_angle, angle = self.end_angle - self.start_angle)
         self.arc.color = (235, 64, 52)
+        if self.draw_chord:
+            self.add_chord_to_batch(batch)
+
+    def add_chord_to_batch(self, batch: Batch):
+        if self.chord_vertex_list != None:
+            return
+        points = []
+        points.extend(self._ref_rigid_body.start_point.tolist())
+        points.extend(self._ref_rigid_body.end_point.tolist())
+        count = 1
+        print(points)
+        self.chord_vertex_list = batch.add(count * 2, gl.GL_LINES, None, ('v2d', tuple(points)), ('c3B', (235, 64, 52) * count * 2))
+    
+    def remove_chord_from_batch(self):
+        if self.chord_vertex_list == None:
+            return
+        self.chord_vertex_list.delete()
+        self.chord_vertex_list = None
 
     def remove_from_batch(self):
         self.arc = None
+        self.remove_chord_from_batch()
     
     def update_visual(self):
         if self.arc == None:
             self.add_to_batch(self.batch)
         self.arc.x = self._ref_rigid_body.center_x
         self.arc.y = self._ref_rigid_body.center_y
+        if self.draw_chord:
+            self.update_chord_visual()
+
+    def update_chord_visual(self):
+        if self.chord_vertex_list == None:
+            self.add_chord_to_batch(self.batch)
+            return
+        points = []
+        points.extend(self._ref_rigid_body.start_point.tolist())
+        points.extend(self._ref_rigid_body.end_point.tolist())
+        self.chord_vertex_list.vertices = points
     
 class VisualCrescentBody(VisualRigidBody):
 

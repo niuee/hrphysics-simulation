@@ -20,7 +20,7 @@ class RigidBody(ABC):
         self.miu_s = 0.3
         self.miu_k = 0.7
         self.friction = True
-        self.moving_static = False
+        self.moving_static = False # the body can be moved by force (whether through user input or by the physics engine) but it will not respond to collision like it should the other objects would collide with it as if it were a static object
     
     
     @staticmethod
@@ -91,6 +91,7 @@ class Polygon(RigidBody):
         self.update_vertices()
     
     def step(self, delta_time, dynamic_control):
+        # if dynamic_control is set to true the collision is resolved physically
         if dynamic_control and self.friction:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(np.subtract(self.force, [0, 0])) > 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("cant move due to friction")

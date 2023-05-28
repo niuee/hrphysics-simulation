@@ -26,11 +26,11 @@ class PhysicsTestGUI(App):
         # self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
         # self.world.add_rigid_body(VisualPolygonBody(10, -5, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
         # self.world.add_rigid_body(VisualPolygonBody(9.9, -4.9, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
-        # self.world.add_rigid_body(VisualCrescentBody(0, -20, 220, self.child_batch, orientation_angle=0, angle_span=-np.pi/2, is_static=True))
+        self.world.add_rigid_body(VisualCrescentBody(0, -20, 220, self.child_batch, orientation_angle=0, angle_span=-np.pi/2, is_static=True))
 
         # self.world.add_rigid_body(VisualConcaveArcBody(0, -20, 220, self.child_batch, orientation_angle=0, angle_span=-np.pi/2, is_static=True))
 
-        self.add_outer_fence(0, -20, 220, self.child_batch, -np.pi/2)
+        # self.add_outer_fence(0, -20, 220, self.child_batch, -np.pi/2)
         self.time = 0
     
 
