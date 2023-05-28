@@ -34,8 +34,8 @@ class VisualRigidBody(rigidbody.RigidBody):
     def increment_linear_velocity(self, delta_velocity:list[float]):
         self._rigid_body.increment_linear_velocity(delta_velocity)
 
-    def step(self, delta_time, dynamic_contrl):
-        self._rigid_body.step(delta_time, dynamic_contrl)
+    def step(self, delta_time):
+        self._rigid_body.step(delta_time)
         self._visual_component.update_visual()
 
     def apply_force_in_orientation(self, force:list[float]):

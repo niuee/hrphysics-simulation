@@ -5,7 +5,7 @@ import math
 
 class RigidBody(ABC):
     
-    def __init__(self, center_x, center_y, orientation_angle, mass:float = 500, is_static=False):
+    def __init__(self, center_x, center_y, orientation_angle, mass:float = 500, is_static=False, friction_enabled=True):
         self.center_x = center_x
         self.center_y = center_y
         self.orientation_angle = orientation_angle
@@ -19,7 +19,7 @@ class RigidBody(ABC):
         self.is_static = is_static
         self.miu_s = 0.3
         self.miu_k = 0.7
-        self.friction = True
+        self.friction_enabled = friction_enabled
         self.moving_static = False # the body can be moved by force (whether through user input or by the physics engine) but it will not respond to collision like it should the other objects would collide with it as if it were a static object
     
     
@@ -60,7 +60,7 @@ class RigidBody(ABC):
         self.orientation_angle += angle
 
     @abstractclassmethod
-    def step(self, delta_time, dynamic_control):
+    def step(self, delta_time):
         pass
 
     @abstractclassmethod
@@ -90,9 +90,9 @@ class Polygon(RigidBody):
         self.vertices = vertices
         self.update_vertices()
     
-    def step(self, delta_time, dynamic_control):
+    def step(self, delta_time):
         # if dynamic_control is set to true the collision is resolved physically
-        if dynamic_control and self.friction:
+        if self.friction_enabled:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(np.subtract(self.force, [0, 0])) > 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("cant move due to friction")
                 self.update_vertices()
@@ -165,8 +165,8 @@ class Rect(RigidBody):
         self.vertex_list = None
         self.area = self.length * self.width
         
-    def step(self, delta_time, dynamic_control):
-        if dynamic_control:
+    def step(self, delta_time):
+        if self.friction_enabled:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(np.subtract(self.force, [0, 0])) > 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("cant move due to friction")
                 self.update_vertices()
@@ -254,8 +254,8 @@ class Crescent(RigidBody):
             self.angle_span = angle_span
         self.update_vertices()
 
-    def step(self, delta_time, dynamic_control):
-        if dynamic_control:
+    def step(self, delta_time):
+        if self.friction_enabled:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("static friction prevent moving")
                 self.update_vertices()
@@ -351,8 +351,8 @@ class ConcaveArc(RigidBody):
             self.angle_span = angle_span
         self.update_vertices()
 
-    def step(self, delta_time, dynamic_control):
-        if dynamic_control:
+    def step(self, delta_time):
+        if self.friction_enabled:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("static friction prevent moving")
                 self.update_vertices()
@@ -447,8 +447,8 @@ class Fan(RigidBody):
             self.angle_span = angle_span
         self.update_vertices()
 
-    def step(self, delta_time, dynamic_control):
-        if dynamic_control:
+    def step(self, delta_time):
+        if self.friction_enabled:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("static friction prevent moving")
                 self.update_vertices()
@@ -531,8 +531,8 @@ class Circle(RigidBody):
         self.radius = radius
         self.area = np.pi * self.radius ** 2
     
-    def step(self, delta_time, dynamic_contrl):
-        if dynamic_contrl:
+    def step(self, delta_time):
+        if self.friction_enabled:
             if self.is_static or (self.linear_velocity[0] == 0 and self.linear_velocity[1] == 0 and RigidBody.get_vector_magnitude(self.force) < self.miu_s * self.mass * 9.81):
                 # print("static friction prevent moving")
                 return

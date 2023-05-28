@@ -20,7 +20,7 @@ class World:
         possible_combinations = Collisions.broad_phase(self.rigid_bodies) 
         Collisions.narrow_phase(self.rigid_bodies, possible_combinations, dt, self.simulation_active)
         for body in self.rigid_bodies:
-            body.step(dt, self.simulation_active)
+            body.step(dt)
     
     def add_outer_fence(self, center_x, center_y, radius, angle_span:float, orientation_angle:float = 0, step_angle_deg=5, mass= 500, is_static=True):
         step_angle = np.radians(step_angle_deg)
