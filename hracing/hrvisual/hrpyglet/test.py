@@ -62,6 +62,7 @@ class PhysicsTestGUI(App):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if modifiers == pyglet.window.key.MOD_SHIFT:
+            print("test")
             mouse_x = x/self.width
             mouse_y = y/self.height
 
