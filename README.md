@@ -13,7 +13,7 @@ The simulation can also run lacking the visual part of it.
 There are a few things that I would like to clarify first.
 - Horses are simulated as rectangles bearing similar dimensions as real horses to simplify the simulation.
 - Inner Guard Rails are depicted as circular arcs, the entire turn would consist several different arcs each with different radius and center.
-- Outter Guard Rails are similar to the inner ones. However, since they are concave shapes, collisions resolving cannot be calculated using SAP (separate axis theorem). Thus, they have to be broken apart into different little rectangles and as a whole they form the entire guard rail and that their collisions can be resolved using SAP.
+- Outer Guard Rails are similar to the inner ones. However, since they are concave shapes, collisions resolving cannot be calculated using SAP (separate axis theorem). Thus, they have to be broken apart into different little rectangles and as a whole they form the entire guard rail and that their collisions can be resolved using SAP.
 
 Currently I have different Rigid Body Types and their respective counterpart to be rendered in pyglet. 
 
@@ -32,7 +32,7 @@ Arc with two straight sides connecting the center to the start and end of the ar
 ### Crescent
 This is a shape that I named for my inner guard rails. 
 ### Fence
-This is a shape that I named for my outter guard rails.
+This is a shape that I named for my outer guard rails.
 
 ## Collisions
 - Horse With each other. (These aren't very realistic yet it's a work in progress)
@@ -41,7 +41,7 @@ This is a shape that I named for my outter guard rails.
 - Horse With Inner Guard Rails.
 ![Alt Text](./media/inner_curve.gif)
 
-- Horse With the Outter Guard Rails.
+- Horse With the Outer Guard Rails.
 ![Alt Text](./media//outer_curve.gif)
 
 
