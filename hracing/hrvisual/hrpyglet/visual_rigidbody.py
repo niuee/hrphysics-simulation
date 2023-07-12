@@ -244,7 +244,7 @@ class VisualCrescentComponent(VisualComponent):
         points.extend(self._ref_rigid_body.start_point.tolist())
         points.extend(self._ref_rigid_body.end_point.tolist())
         count = 1
-        print(points)
+        # print(points)
         self.chord_vertex_list = batch.add(count * 2, gl.GL_LINES, None, ('v2d', tuple(points)), ('c3B', (235, 64, 52) * count * 2))
     
     def remove_chord_from_batch(self):

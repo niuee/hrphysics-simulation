@@ -8,6 +8,8 @@ from ...hrsimulation.hrphysics.rigidbody import RigidBody
 from ...hrsimulation.hrphysics import rigidbody
 from ...hrsimulation.hrphysics.world import World
 import numpy as np
+import json
+import os
 
 TANGENTIAL_TARGET_SPEED = 13
 MAX_TARGET_SPEED = 20
@@ -20,9 +22,28 @@ class PhysicsTestGUI(App):
         super().__init__(width, height, *args, **kwargs)
         self.child_batch = pyglet.graphics.Batch()
         clock.schedule_interval(self.update, 0.005) # update at 60Hz
+
         self.world = World()
         # self.world.simulation_active = False
         self.world.add_rigid_body(VisualPolygonBody(0, 0, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500))
+
+        f = open(os.path.dirname(__file__) + '/../tracks/exp_track_8.json')
+  
+        # returns JSON object as 
+        # a dictionary
+        tracks = json.load(f)
+        
+        # Iterating through the json
+        # list
+        for track in tracks:
+            # print(track)
+            if track['tracktype'] == "CURVE":
+                start_point = np.subtract([track['startPoint']['x'], track['startPoint']['y']], [track['center']['x'], track['center']['y']])
+                orientation_angle = RigidBody.angle_vectora2b([1, 0], start_point)
+                # print(f"Orientation Angle of Curve: {orientation_angle}")
+                self.world.add_rigid_body(VisualCrescentBody(track['center']['x'], track['center']['y'], track['radius'], self.child_batch, orientation_angle, track['angleSpan'], is_static=True))
+        # Closing file
+        f.close()
         # self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
         # self.world.add_rigid_body(VisualPolygonBody(10, -5, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
         # self.world.add_rigid_body(VisualPolygonBody(9.9, -4.9, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
