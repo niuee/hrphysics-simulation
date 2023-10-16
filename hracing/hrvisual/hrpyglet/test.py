@@ -15,6 +15,107 @@ TANGENTIAL_TARGET_SPEED = 13
 MAX_TARGET_SPEED = 20
 TARGET_TURN_RADIUS = 500
 
+class RaceHorse:
+
+    def __init__(self, name, width, length, mass):
+        self.name = name
+        self.width = width
+        self.length = length
+        self.mass = mass
+
+
+class TrackHorseController:
+
+    def __init__(self, world: World, tracks, number_of_horses, horses: list[RaceHorse], render_batch: graphics.Batch, track_width=30, turn="left", step_resolution=0.005):
+        self.name = "name"
+        self.tracks = tracks
+        self.number_of_horses = number_of_horses
+        self.horse_cur_track_index= [0 for _ in range(number_of_horses)]
+        self.horse_cur_pos = [[0, 0] for _ in range(number_of_horses)]
+        self.track_width = track_width
+        self.turn = turn
+        self.world = world
+        self.step_resolution = step_resolution
+        self.horses = horses
+        self.batch = render_batch
+        line_up_direction = self.cal_outward_normal_direction(self.tracks[0])
+        starting_point = [self.tracks[0]['startPoint']['x'], self.tracks[0]['startPoint']['y']]
+        spacing = 2
+        starting_direction = self.cal_track_direction(self.tracks[0])
+        orientation_angle = RigidBody.angle_vectora2b([1, 0], starting_direction)
+        for index, horse in enumerate(self.horses):
+            pos = np.add(starting_point, np.multiply(spacing * (index + 1), line_up_direction))
+            self.world.add_horse(VisualRectBody(pos[0], pos[1], horse.width, horse.length, self.batch, mass = horse.mass, orientation_angle=orientation_angle))
+
+
+    def step(self, delta_time):
+
+
+        self.world.step(self.step_resolution)
+
+    def exitingTrackSegement(self, horse_idx):
+        track_index = self.horse_cur_track_index[horse_idx]
+        if self.tracs[track_index]['trackType'] == "STRAIGHT" and \
+            not self.withinStraightTrackBound(self.horse_cur_pos[horse_idx], self.tracks[track_index]):
+            return True
+
+        elif self.trac[track_index]['trackType'] == "CURVE" and \
+            not self.withinCurveTracKBound(self.horse_cur_pos[horse_idx], self.tracks[track_index]):
+            return True
+        return False
+    
+    def withinStraightTrackBound(self, horse_pos, track):
+        end_point = [track['endPoint']['x'], track['endPoint']['y']]
+        start_point = [track['startPoint']['x'], track['startPoint']['y']]
+        track_direction = RigidBody.get_unit_vector(np.subtract(end_point, start_point))
+        horse_pos_direction = RigidBody.get_unit_vector(np.subtract(horse_pos, end_point))
+
+        if self.turn == "left":
+            bound_direction = RigidBody.transform(track_direction, -np.pi / 2)
+            angle = RigidBody.angle_vectora2b(bound_direction, horse_pos_direction)
+            if angle > 0:
+                return False
+        elif self.turn == "right":
+            bound_direction = RigidBody.transform(track_direction, np.pi / 2)
+            angle = RigidBody.angle_vectora2b(bound_direction, horse_pos_direction)
+            if angle < 0:
+                return False
+
+        return True
+
+    def withinCurveTracKBound(self, horse_pos, track):
+        center = [track['center']['x'], track['center']['y']]
+        end_point = [track['endPoint']['x'], track['endPoint']['y']]
+        bound_direction = RigidBody.get_unit_vector(np.subtract(end_point, center))
+        horse_direction = RigidBody.get_unit_vector(np.subtract(horse_pos, center))
+        angle = RigidBody.angle_vectora2b(bound_direction, horse_direction)
+
+        if self.turn == "left":
+            if angle > 0:
+                return False
+        elif self.turn == "right":
+            if angle < 0:
+                return False
+
+        return True
+    
+    def cal_outward_normal_direction(self, track):
+        start_point = [track['startPoint']['x'], track['startPoint']['y']]
+        end_point = [track['endPoint']['x'], track['endPoint']['y']]
+        starting_direction = RigidBody.get_unit_vector(np.subtract(end_point, start_point))
+        if self.turn == "left":
+            return RigidBody.transform(starting_direction, -np.pi / 2)
+        elif self.turn == "right":
+            return RigidBody.transform(starting_direction, np.pi / 2)
+        
+    
+    def cal_track_direction(self, track):
+        start_point = [track['startPoint']['x'], track['startPoint']['y']]
+        end_point = [track['endPoint']['x'], track['endPoint']['y']]
+        return RigidBody.get_unit_vector(np.subtract(end_point, start_point))
+
+        
+
 class PhysicsTestGUI(App):
 
     def __init__(self, width, height, *args, **kwargs):
@@ -42,8 +143,13 @@ class PhysicsTestGUI(App):
                 orientation_angle = RigidBody.angle_vectora2b([1, 0], start_point)
                 # print(f"Orientation Angle of Curve: {orientation_angle}")
                 self.world.add_rigid_body(VisualCrescentBody(track['center']['x'], track['center']['y'], track['radius'], self.child_batch, orientation_angle, track['angleSpan'], is_static=True))
+        test_horses = []
+        for index in range(3):
+            test_horses.append(RaceHorse("test horse " + str(index), 0.55, 2.4, 500))
+        controller = TrackHorseController(self.world, tracks, 3, test_horses, self.child_batch)
         # Closing file
         f.close()
+        
         # self.world.add_rigid_body(VisualRectBody(0, 210, 0.55, 2.4, self.child_batch, mass=500))
         # self.world.add_rigid_body(VisualPolygonBody(10, -5, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
         # self.world.add_rigid_body(VisualPolygonBody(9.9, -4.9, [[1.2, 0.55/2], [1.2, -0.55/2], [-1.2, -0.55/2], [-1.2, 0.55/2]], self.child_batch, mass=500, is_static=True))
@@ -195,7 +301,7 @@ class PhysicsTestGUI(App):
         # body.force = total_force
         # body.apply_force(total_force)
 
-        self.world.step(delta_time)
+        self.world.step(dt)
 
 
     def on_draw(self):

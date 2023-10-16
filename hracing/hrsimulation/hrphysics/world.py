@@ -10,9 +10,25 @@ class World:
     def __init__(self):
         self.rigid_bodies:list[RigidBody] = []
         self.simulation_active = True
+        self.horse_number_to_world_index:list[int] = []
 
     def add_rigid_body(self, body: RigidBody):
         self.rigid_bodies.append(body)
+    
+    def add_horse(self, body: RigidBody):
+        self.horse_number_to_world_index.append(len(self.rigid_bodies))
+        self.rigid_bodies.append(body)
+
+    def get_horse_pos(self, horse_number):
+        horse = self.rigid_bodies[self.horse_number_to_world_index[horse_number]]
+        return horse.get_position()
+    
+    def get_all_horses_pos(self):
+        res = []
+        for horse_number in self.horse_number_to_world_index:
+            res.append(self.rigid_bodies[self.horse_number_to_world_index[horse_number]].get_position())
+        
+        return res
 
     def step(self, dt):
         # print("--------")

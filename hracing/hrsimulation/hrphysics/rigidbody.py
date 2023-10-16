@@ -59,6 +59,9 @@ class RigidBody(ABC):
     def rotate_radians(self, angle):
         self.orientation_angle += angle
 
+    def get_position(self):
+        return [self.center_x, self.center_y]
+
     @abstractclassmethod
     def step(self, delta_time):
         pass
